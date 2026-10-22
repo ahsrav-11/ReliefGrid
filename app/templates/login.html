@@ -1,13 +1,37 @@
+
 {% extends "base.html" %}
 {% block content %}
 <section class="login">
   <h1>ReliefGrid</h1>
-  <p class="muted">Allocate limited relief supplies to the places that need them most.</p>
+  <p class="muted">
+    Allocate limited relief supplies to the places that need them most.
+  </p>
+
   <form method="post" class="panel form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label>Username <input name="username" autofocus required></label>
-    <label>Password <input type="password" name="password" required></label>
-    <button class="btn">Log in</button>
+
+    <label for="username">Email address</label>
+    <input
+      id="username"
+      type="email"
+      name="username"
+      placeholder="Enter your email address"
+      autocomplete="username"
+      autofocus
+      required
+    >
+
+    <label for="password">Password</label>
+    <input
+      id="password"
+      type="password"
+      name="password"
+      placeholder="Enter your password"
+      autocomplete="current-password"
+      required
+    >
+
+    <button class="btn" type="submit">Log in</button>
   </form>
 </section>
 {% endblock %}
