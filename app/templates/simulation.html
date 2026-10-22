@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Disaster simulation</h1>
+<p class="muted">Change demand or supply, rerun the algorithm, and compare against the current plan. Nothing is saved.</p>
+{% set button = 'Run simulation' %}
+{% set extra %}<label>Demand (% of current) <b id="dout"></b> <input type="range" name="demand_pct" data-out="dout" min="10" max="500" step="10" value="{{ form.get('demand_pct', 100) }}"></label>
+<label>Supply (% of current) <b id="sout"></b> <input type="range" name="supply_pct" data-out="sout" min="0" max="500" step="10" value="{{ form.get('supply_pct', 100) }}"></label>{% endset %}
+{% include "_selectors.html" %}
+{% if cmp %}
+  <div class="tiles">
+    <div class="tile"><b>{{ cmp.bsup }} to {{ cmp.ssup }}</b><span>Supply, current to scenario</span></div>
+    <div class="tile"><b>{{ cmp.base_unmet }} to {{ cmp.scen_unmet }}</b><span>Unmet demand, current to scenario</span></div>
+  </div>
+  {% if cmp.rows %}
+  <div class="scroll"><table><thead><tr><th>Location</th><th>Rank now</th><th>Rank in scenario</th><th>Allocated now</th><th>Allocated in scenario</th><th>Change</th><th>Unmet in scenario</th></tr></thead><tbody>
+  {% for r in cmp.rows %}<tr><td>{{ r.location }}</td><td>{{ r.base_rank }}</td><td>{{ r.rank }}</td><td>{{ r.base_alloc }}</td><td>{{ r.allocated }}</td><td>{{ '%+d' % (r.allocated - r.base_alloc) }}</td><td>{{ r.unmet }}</td></tr>{% endfor %}</tbody></table></div>
+  <div class="panel"><canvas id="c" height="90"></canvas></div>
+  {% else %}<p class="empty">No pending requests to simulate.</p>{% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if cmp and cmp.rows %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const d = {{ chart|tojson }};
+new Chart(document.getElementById('c'), {type:'bar', data:{labels:d.labels, datasets:[
+ {label:'Current plan', data:d.base, backgroundColor:'#5b6b73'}, {label:'Scenario', data:d.scen, backgroundColor:'#0b6b63'}]}, options:{scales:{y:{beginAtZero:true}}}});
+</script>{% endif %}{% endblock %}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title or 'ReliefGrid' }} | ReliefGrid</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ 'auth' if not current_user.is_authenticated else '' }}">
+{% if current_user.is_authenticated %}
+<nav>
+  <a class="brand" href="{{ url_for('core.dashboard') }}">ReliefGrid</a>
+  <a href="{{ url_for('core.dashboard') }}">Dashboard</a>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('admin.disasters') }}">Disasters</a>
+  <a href="{{ url_for('admin.locations') }}">Locations</a>
+  <a href="{{ url_for('admin.resources') }}">Resources</a>
+  <a href="{{ url_for('admin.inventory') }}">Inventory</a>
+  <a href="{{ url_for('admin.stock_log') }}">Stock log</a>
+  <a href="{{ url_for('requests.list_requests') }}">Requests</a>
+  <a href="{{ url_for('allocation.run') }}">Allocation</a>
+  <a href="{{ url_for('allocation.simulate') }}">Simulation</a>
+  <a href="{{ url_for('delivery.list_deliveries') }}">Deliveries</a>
+  <a href="{{ url_for('core.reports') }}">Reports</a>
+  <a href="{{ url_for('admin.users') }}">Users</a>
+  {% else %}
+  <a href="{{ url_for('requests.list_requests') }}">My requests</a>
+  <a href="{{ url_for('delivery.list_deliveries') }}">My deliveries</a>
+  {% endif %}
+  <a href="{{ url_for('core.notifications') }}">Notifications{% if unread %} <span class="badge">{{ unread }}</span>{% endif %}</a>
+  <a href="{{ url_for('auth.profile') }}">Profile</a>
+  <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link">Log out</button></form>
+</nav>
+{% endif %}
+<main>
+{% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="flash {{ c }}" role="status">{{ m }}</div>{% endfor %}{% endwith %}
+{% block content %}{% endblock %}
+</main>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

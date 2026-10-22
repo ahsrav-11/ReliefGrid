@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ title }}</h1>
+{% if intro %}<p class="muted">{{ intro }}</p>{% endif %}
+{% if intro_html %}<p class="filters">{{ intro_html|safe }}</p>{% endif %}
+{% if top_link %}<p><a class="btn" href="{{ top_link[1] }}">{{ top_link[0] }}</a></p>{% endif %}
+{% if post_button %}<form method="post" action="{{ post_button[1] }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn">{{ post_button[0] }}</button></form>{% endif %}
+{% if fields %}
+<form method="post" class="panel form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for f in fields %}
+  <label>{{ f.label }}
+    {% if f.type == 'select' %}
+    <select name="{{ f.name }}">{% for v, l in f.options %}<option value="{{ v }}" {{ 'selected' if v == f.value|string }}>{{ l }}</option>{% endfor %}</select>
+    {% elif f.type == 'textarea' %}<textarea name="{{ f.name }}" rows="3">{{ f.value }}</textarea>
+    {% else %}<input type="{{ f.type }}" name="{{ f.name }}" value="{{ f.value }}" {% if f.min is defined %}min="{{ f.min }}"{% endif %} {% if f.max is defined %}max="{{ f.max }}"{% endif %}>
+    {% endif %}
+  </label>
+  {% endfor %}
+  <button class="btn">{{ submit or 'Save' }}</button>
+</form>
+{% endif %}
+{% if headers %}
+{% if rows %}
+<div class="scroll"><table>
+  <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}{% if rows|selectattr('actions')|list %}<th>Actions</th>{% endif %}</tr></thead>
+  <tbody>{% for r in rows %}<tr>
+    {% for c in r.cells %}<td>{% if c in ('pending','LOW','issue','rejected') %}<span class="chip bad">{{ c }}</span>{% elif c in ('approved','fulfilled','delivered','OK') %}<span class="chip good">{{ c }}</span>{% elif c in ('partial','assigned','dispatched') %}<span class="chip mid">{{ c }}</span>{% else %}{{ c }}{% endif %}</td>{% endfor %}
+    {% if rows|selectattr('actions')|list %}<td class="acts">{% for label, url, method in r.actions or [] %}
+      {% if method == 'post' %}<form method="post" action="{{ url }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small">{{ label }}</button></form>
+      {% else %}<a class="btn small" href="{{ url }}">{{ label }}</a>{% endif %}{% endfor %}</td>{% endif %}
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<p class="empty">Nothing here yet.</p>{% endif %}
+{% endif %}
+{% endblock %}

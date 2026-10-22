@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Operations overview' if current_user.is_admin else 'Welcome, ' ~ (current_user.full_name or current_user.username) }}</h1>
+<div class="tiles">{% for label, n in tiles %}<div class="tile"><b>{{ n }}</b><span>{{ label }}</span></div>{% endfor %}</div>
+{% if current_user.is_admin %}
+  {% if alerts %}<h2>Alerts</h2><ul class="alerts">{% for a in alerts %}<li>{{ a }}</li>{% endfor %}</ul>{% endif %}
+  <h2>Available stock and unmet demand</h2>
+  <div class="panel"><canvas id="c" height="110"></canvas></div>
+{% else %}
+  <h2>My recent requests</h2>
+  {% if mine %}<div class="scroll"><table><thead><tr><th>#</th><th>Resource</th><th>Requested</th><th>Approved</th><th>Status</th></tr></thead><tbody>
+  {% for r in mine %}<tr><td>{{ r.id }}</td><td>{{ r.resource.name }}</td><td>{{ r.quantity }}</td><td>{{ r.approved_qty }}</td><td>{{ r.status }}</td></tr>{% endfor %}</tbody></table></div>
+  {% else %}<p class="empty">No requests yet. <a href="{{ url_for('requests.new') }}">Send your first request</a>.</p>{% endif %}
+  <h2>My deliveries</h2>
+  {% if dels %}<ul class="plain">{% for d in dels %}<li>#{{ d.id }}: {{ d.quantity }} {{ d.request.resource.name }} from {{ d.stock.depot.name }} ({{ d.status }})</li>{% endfor %}</ul>{% else %}<p class="empty">No deliveries yet.</p>{% endif %}
+  <h2>Latest updates</h2>
+  <ul class="plain">{% for n in notes %}<li>{{ n.message }}</li>{% else %}<li class="muted">No notifications.</li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if current_user.is_admin %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const d = {{ chart|tojson }};
+new Chart(document.getElementById('c'), {type:'bar', data:{labels:d.labels, datasets:[
+ {label:'Available stock', data:d.stock, backgroundColor:'#0b6b63'}, {label:'Unmet demand', data:d.unmet, backgroundColor:'#b42318'}]},
+ options:{scales:{y:{beginAtZero:true}}}});
+</script>{% endif %}{% endblock %}

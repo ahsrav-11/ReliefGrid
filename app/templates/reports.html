@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Reports</h1>
+<p><a class="btn small" href="{{ url_for('core.reports_csv') }}">Download CSV</a></p>
+<h2>Allocation performance</h2>
+<div class="scroll"><table><thead><tr><th>Resource</th><th>Requested</th><th>Allocated</th><th>Fulfilment</th><th>Unmet</th></tr></thead><tbody>
+{% for r in rows %}<tr>{% for c in r %}<td>{{ c }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+<div class="panel"><canvas id="a" height="90"></canvas></div>
+<h2>Delivery performance</h2>
+<p>Average time from assignment to confirmed delivery: <b>{{ avg }} hours</b>.</p>
+<div class="panel"><canvas id="b" height="70"></canvas></div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const c = {{ chart|tojson }};
+new Chart(document.getElementById('a'), {type:'bar', data:{labels:c.labels, datasets:[{label:'Requested', data:c.requested, backgroundColor:'#a86400'},{label:'Allocated', data:c.allocated, backgroundColor:'#0b6b63'}]}, options:{scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('b'), {type:'bar', data:{labels:{{ statuses|tojson }}, datasets:[{label:'Deliveries', data:{{ counts|tojson }}, backgroundColor:'#14212b'}]}, options:{scales:{y:{beginAtZero:true, ticks:{precision:0}}}}});
+</script>
+{% endblock %}

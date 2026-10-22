@@ -1,0 +1,7 @@
+<form method="get" class="panel form row">
+  <label>Disaster <select name="disaster_id">{% for d in ds %}<option value="{{ d.id }}" {{ 'selected' if form.get('disaster_id') == d.id|string }}>{{ d.name }}</option>{% endfor %}</select></label>
+  <label>Resource <select name="resource_id">{% for r in rs %}<option value="{{ r.id }}" {{ 'selected' if form.get('resource_id') == r.id|string }}>{{ r.name }}</option>{% endfor %}</select></label>
+  <label>Method <select name="mode"><option value="priority" {{ 'selected' if form.get('mode') == 'priority' }}>Priority first</option><option value="proportional" {{ 'selected' if form.get('mode') == 'proportional' }}>Share proportionally</option></select></label>
+  {{ extra|safe if extra }}
+  <button class="btn">{{ button }}</button>
+</form>

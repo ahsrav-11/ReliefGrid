@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Smart allocation</h1>
+<p class="muted">Ranks pending requests by urgency, population, area severity and size, then splits the available stock.</p>
+{% set button = 'Preview plan' %}{% include "_selectors.html" %}
+{% if plan is not none %}
+  <p><b>Available stock:</b> {{ supply }}. <b>Pending requests:</b> {{ plan|length }}.</p>
+  {% if plan %}
+  <div class="scroll"><table><thead><tr><th>Rank</th><th>Location</th><th>Score</th><th>Requested</th><th>Allocated</th><th>Unmet</th><th>Why</th></tr></thead><tbody>
+  {% for p in plan %}<tr><td>{{ p.rank }}</td><td>{{ p.location }}</td><td>{{ p.score }}</td><td>{{ p.quantity }}</td><td><b>{{ p.allocated }}</b></td><td>{{ p.unmet }}</td><td>{{ p.explanation }}</td></tr>{% endfor %}</tbody></table></div>
+  <div class="panel"><canvas id="c" height="90"></canvas></div>
+  <form method="post" action="{{ url_for('allocation.apply') }}" data-confirm="Apply this plan? Stock will be reserved and deliveries created.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="disaster_id" value="{{ form.get('disaster_id') }}"><input type="hidden" name="resource_id" value="{{ form.get('resource_id') }}"><input type="hidden" name="mode" value="{{ form.get('mode') }}">
+    <button class="btn">Apply plan and create deliveries</button>
+  </form>
+  {% else %}<p class="empty">No pending requests for this resource.</p>{% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if plan %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const d = {{ chart|tojson }};
+new Chart(document.getElementById('c'), {type:'bar', data:{labels:d.labels, datasets:[
+ {label:'Requested', data:d.asked, backgroundColor:'#a86400'}, {label:'Allocated', data:d.given, backgroundColor:'#0b6b63'}]}, options:{scales:{y:{beginAtZero:true}}}});
+</script>{% endif %}{% endblock %}
